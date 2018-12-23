@@ -1,0 +1,468 @@
+##  R script  underlying the major results in the paper below
+### Data file (tree_level_data.csv,site1elev.xls,site2elev.xls,elevdata.csv,
+ quadrat_level_data.csv) can be downloaded from Figshare (https://figshare.com/articles/Jiaohe-figshare-data/7451360; DOI: 10.6084/m9.figshare.7451360) 
+### or from the GFBI website (http://www.gfbinitiative.org/data). 
+### Reference: Weixue Luo, Jingjing Liang, Roberto Cazzolla Gatti, Xiuhai Zhao, Chunyu Zhang (In press) Parameterization of biodiversity productivity relationship and its scale dependency using georeferenced tree-level data.Journal of Ecology
+
+ 
+#########quadrat level analysis include: STEP1,STEP2,STEP3 ######
+
+###################STEP1:##########################
+
+library(BiodiversityR)
+data<-read.csv("tree_level_data.csv",T)
+
+#####site1 sample 40 quadrat###
+
+site1data<-data[data$site=="site1",]
+comb.df<-list()
+quadrat.df <- as.data.frame(matrix(0,ncol=17,nrow = 0))
+
+###10~100 spatial scale##
+for (r in 10:100) {
+  B1.list<-vector()
+  BA.list<-vector()
+  BP.list<- vector()   
+  richness<-vector()
+  D1<-vector()
+  E1<-vector()
+  D2<-vector()
+  E2<-vector()
+  xa.list<-vector()
+  xar.list<-vector()
+  ya.list<-vector()
+  yar.list<-vector()
+  
+  #####site1  sample 40 quadrat## 
+  for (i in 1:40){
+    xa<-round(runif(1,0,660-r)) ##plot width
+    ya<-round(runif(1,0,320-r)) ##plot length
+    
+    foc.data1<-site1data[site1data$x>=xa&site1data$x<=xa+r&site1data$y>=ya&site1data$y<=ya+r,]
+    
+    ##r^2/10000,quadrat data at different scales are converted into quadarat data per hectare
+    B1.list[i]<-sum(foc.data1[foc.data1$dbh2010>=5,]$Biomass2010)/(r^2/10000)
+    BA.list[i]<-sum(foc.data1[foc.data1$dbh2010>=5,]$BA2010)/10000/(r^2/10000)
+    BP.list[i]<-sum(foc.data1[foc.data1$BP>=0,]$BP)/(r^2/10000)
+    xa.list[i]<-xa
+    xar.list[i]<-xa+r
+    ya.list[i]<-ya
+    yar.list[i]<-ya+r
+  
+    spec_data1<-table(foc.data1$species)
+    a<- sum(diversityresult(spec_data1, index="richness",method="each site"))
+    richness[i]<-a[[1]]
+    
+    b<- sum(diversityresult(spec_data1, index="Shannon",method="each site"))
+    D1[i]<-exp(b[[1]])
+    E1[i]<-exp(b[[1]])/a[[1]]
+    
+    c<- sum(diversityresult(spec_data1, index="Simpson",method="each site"))
+    D2[i]<-1/sqrt(1-c[[1]])
+    E2[i]<-(1/sqrt(1-c[[1]]))/a[[1]]
+    
+  }
+  
+  comb.df<- cbind(rep(r, times= length(B1.list)),B1.list,BA.list,BP.list,richness,D1,E1,D2,E2,
+                  xa.list,ya.list,xa.list,yar.list,xar.list,yar.list,xar.list,ya.list)
+  # assign(paste0('radius.',r), comb.df)
+  quadrat.df<- rbind(quadrat.df, comb.df)
+  print(r)
+}                                                                                                    
+quadrat.df1<-quadrat.df
+write.csv(quadrat.df1,"quadrat.df1.csv") 
+
+#####site2 sample 60 quadrat
+site2data<-data[data$site=="site2",]
+
+comb.df<-list()
+quadrat.df <- as.data.frame(matrix(0,ncol=17,nrow = 0))
+###10~100 spatial scale##
+for (r in 10:100) {
+  B1.list<-vector()
+  BA.list<-vector()
+  BP.list<- vector()   
+  richness<-vector()
+  D1<-vector()
+  E1<-vector()
+  D2<-vector()
+  E2<-vector()
+  xa.list<-vector()
+  xar.list<-vector()
+  ya.list<-vector()
+  yar.list<-vector()
+  
+  #####site2  sample 60 quadrat##
+  for (i in 1:60){
+    xa<-round(runif(1,0,660-r)) ##plot width
+    ya<-round(runif(1,0,500-r)) ##plot length
+    
+    foc.data2<-site2data[site2data$x>=xa&site2data$x<=xa+r&site2data$y>=ya&site2data$y<=ya+r,]
+   
+     ##r^2/10000,quadrat data at different scales are converted into quadrat data per hectare
+    B1.list[i]<-sum(foc.data2[foc.data2$dbh2010>=5,]$Biomass2010)/(r^2/10000)
+    BA.list[i]<-sum(foc.data2[foc.data2$dbh2010>=5,]$BA2010)/10000/(r^2/10000)
+    BP.list[i]<-sum(foc.data2[foc.data2$BP>=0,]$BP)/(r^2/10000)
+    xa.list[i]<-xa
+    xar.list[i]<-xa+r
+    ya.list[i]<-ya
+    yar.list[i]<-ya+r
+    
+    spec_data2<-table(foc.data2$species)
+    a<- sum(diversityresult(spec_data2, index="richness",method="each site"))
+    richness[i]<-a[[1]]
+    
+    b<- sum(diversityresult(spec_data2, index="Shannon",method="each site"))
+    D1[i]<-exp(b[[1]])
+    E1[i]<-exp(b[[1]])/a[[1]]
+    
+    c<- sum(diversityresult(spec_data2, index="Simpson",method="each site"))
+    D2[i]<-1/sqrt(1-c[[1]])
+    E2[i]<-(1/sqrt(1-c[[1]]))/a[[1]]
+    
+  }
+  
+  comb.df<- cbind(rep(r, times= length(B1.list)),B1.list,BA.list,BP.list,richness,D1,E1,D2,E2,
+                  xa.list,ya.list,xa.list,yar.list,xar.list,yar.list,xar.list,ya.list)
+  # assign(paste0('radius.',r), comb.df)
+  quadrat.df<- rbind(quadrat.df, comb.df)
+  print(r)
+}                                                                                                    
+quadrat.df2<-quadrat.df
+write.csv(quadrat.df2,"quadrat.df2.csv") 
+
+quadrat.df3<-rbind(quadrat.df1,quadrat.df2)
+write.csv(quadrat.df3,"quadrat.df3.csv")  
+
+###################STEP2:##########################
+
+###################topographic data##########
+#topographic data preprocessing
+#site1 quadrat elev (site1elev.csv)
+##When the coordinates of four points in the each quadrat of quadrat.df1(site1data) are brought into site1elev.csv, 
+##the elevation values corresponding to the four points in the each quadrat ofquadrat.df1(site1data) can be obtained.
+
+#site2 quadrat elev (site2elev.csv)
+##When the coordinates of four points in the each quadrat of quadrat.df2(site2data) are brought into site1elev.csv, 
+##the elevation values corresponding to the four points in the each quadrat of quadrat.df2(site2data) can be obtained.
+
+##Next, the average elevation, slope and aspect of each quadrat can be calculated.As shown below,
+
+attach('C:/Users/Administrator/Documents/CTFSRPackage.rdata')
+ls(2)
+######calculate meanelev#####
+elevdata=read.table("elevdata.csv",header=T)####Elevation Data of Four corner Points in Quadrat####
+
+#####site1  sample 40 quadrat
+site1elevdata<-elevdata[elevdata$site=="site1",]
+
+comb.df<-list()
+topo.df <- as.data.frame(matrix(0,ncol=21,nrow = 0))
+###10~100 spatial scale##
+for (r in 10:100) {
+  foc.data1<-site1elevdata[site1elevdata$gridsize==r,]
+    meanelev.list<-vector()
+    aspect.list<-vector()
+    slope.list<- vector()   
+    
+  
+    for (i in 1:nrow(foc.data1)){
+      sub.data<-foc.data1[i,]
+  
+      cornerelev1=sub.data$cornerelev1
+      cornerelev2=sub.data$cornerelev2
+      cornerelev3=sub.data$cornerelev3
+      cornerelev4=sub.data$cornerelev4
+     meanelev.list[i]=(cornerelev1+cornerelev2+cornerelev3+cornerelev4)/4
+
+######calculate quadrat aspect#####
+quadaspect=function(cornerelev,gridsize=r)
+{
+  fy=cornerelev2+cornerelev3-cornerelev1-cornerelev4
+  fx=cornerelev3+cornerelev4-cornerelev1-cornerelev2
+  if(fx==0){
+    if(fy<0) aspect=0
+    else if(fy>0) aspect=180
+  }
+  else aspect=180-atan(fy/fx)*180/pi+90*fx/abs(fx)
+  return(aspect)
+}
+aspect.list[i]<-quadaspect(sub.data)
+
+
+###calculate quadrat slope#####
+quadslope=function (sub.data, gridsize =r) 
+{
+  cornerelev= numeric(4)
+  cornerelev[1]=sub.data$cornerelev1
+  cornerelev[2]=sub.data$cornerelev2
+  cornerelev[3]=sub.data$cornerelev3
+  cornerelev[4]=sub.data$cornerelev4
+  slope = numeric(4)
+  z = numeric(3)
+  for (j in 1:4) {
+    post = 1        
+    for (k in (j + 1):(j + 3)) {
+      if (k > 4) 
+        m = k%%4
+      else m = k
+      z[post] = cornerelev[m]
+      post = post + 1
+    }
+    slope[j] = calcslope(z, r)
+  }
+  return(mean(slope))
+}
+slope.list[i]<-quadslope(sub.data)
+
+    }
+    
+    comb.df<- cbind(site1elevdata,rep(r, times= length(meanelev.list)),meanelev.list,aspect.list,slope.list)
+    # assign(paste0('radius.',r), comb.df)
+    topo.df<- rbind(topo.df, comb.df)
+    print(r)
+}                                                                                                    
+topo.df1<-topo.df
+write.csv(topo.df1,"topo.df1.csv") 
+
+
+#####site2  sample 60 quadrat
+site2elevdata<-elevdata[elevdata$site=="site2",]
+
+comb.df<-list()
+topo.df <- as.data.frame(matrix(0,ncol=21,nrow = 0))
+###10~100 spatial scale##
+for (r in 10:100) {
+  foc.data1<-site2elevdata[site2elevdata$gridsize==r,]
+  meanelev.list<-vector()
+  aspect.list<-vector()
+  slope.list<- vector()   
+  
+  
+  for (i in 1:nrow(foc.data1)){
+    sub.data<-foc.data1[i,]
+    
+    cornerelev1=sub.data$cornerelev1
+    cornerelev2=sub.data$cornerelev2
+    cornerelev3=sub.data$cornerelev3
+    cornerelev4=sub.data$cornerelev4
+    meanelev.list[i]=(cornerelev1+cornerelev2+cornerelev3+cornerelev4)/4
+    
+    ######calculate quadrat aspect#####
+    quadaspect=function(cornerelev,gridsize=r)
+    {
+      fy=cornerelev2+cornerelev3-cornerelev1-cornerelev4
+      fx=cornerelev3+cornerelev4-cornerelev1-cornerelev2
+      if(fx==0){
+        if(fy<0) aspect=0
+        else if(fy>0) aspect=180
+      }
+      else aspect=180-atan(fy/fx)*180/pi+90*fx/abs(fx)
+      return(aspect)
+    }
+    aspect.list[i]<-quadaspect(sub.data)
+    
+    
+    ###calculate quadrat slope#####
+    quadslope=function (sub.data, gridsize =r) 
+    {
+      cornerelev= numeric(4)
+      cornerelev[1]=sub.data$cornerelev1
+      cornerelev[2]=sub.data$cornerelev2
+      cornerelev[3]=sub.data$cornerelev3
+      cornerelev[4]=sub.data$cornerelev4
+      slope = numeric(4)
+      z = numeric(3)
+      for (j in 1:4) {
+        post = 1        
+        for (k in (j + 1):(j + 3)) {
+          if (k > 4) 
+            m = k%%4
+          else m = k
+          z[post] = cornerelev[m]
+          post = post + 1
+        }
+        slope[j] = calcslope(z, r)
+      }
+      return(mean(slope))
+    }
+    slope.list[i]<-quadslope(sub.data)
+    
+  }
+  
+  comb.df<- cbind(site2elevdata,rep(r, times= length(meanelev.list)),meanelev.list,aspect.list,slope.list)
+  # assign(paste0('radius.',r), comb.df)
+  topo.df<- rbind(topo.df, comb.df)
+  print(r)
+}                                                                                                    
+topo.df2<-topo.df
+write.csv(topo.df2,"topo.df2.csv") 
+
+topo.df3<-rbind(topo.df1,topo.df2)
+write.csv(topo.df3,"topo.df3.csv")  
+
+###################STEP3:##########################
+# R code to use bootstrap to estimate random forest models
+# Developed by Jingjing Liang, May 12th, 2016. All rights reserved.
+# Load packages for generalized least squares
+library(nlme)
+quadratlevel_data<-read.table("quadrat_level_data.csv",header=T)
+
+comb.df<-list()
+tot.df <- as.data.frame(matrix(0,ncol=13,nrow = 0))
+for (r in 10:100) {
+  foc.data<-quadratlevel_data[quadratlevel_data$scale==r,]
+
+
+  i.list<- vector()
+  loglik.list<- vector()   
+  AIC.list<- vector()   
+  BIC.list<-vector()
+  R2.list<-vector()
+  const.list<-vector()
+  richness.list<-vector()
+  B1.list<-vector()
+  BA.list<-vector()
+  elev.list<-vector()
+  slope.list<-vector()
+  cosa.list<-vector()
+
+  for(i in 1:1000) {
+    tryCatch({
+    training <- foc.data[sample(1:nrow(foc.data), 80, replace=FALSE),]
+    gls1 <- gls(log(BP)~log(richness)+log(Biomass2010)+log(BA2010)+elev+slope+cosa, data=training, method="ML",corr= corSpher(form = ~ x + y, nugget = TRUE), control=glsControl(singular.ok=TRUE))
+   i.list[i]<-i
+   loglik.list[i]<-logLik (gls1)
+   AIC.list[i]<-AIC(gls1)
+   BIC.list[i]<-BIC(gls1)
+   #Generalized coefficient of determination
+   gls0 <- gls(log(BP)~ 1, data=training, method="ML")  
+   R2   <- 1-exp(logLik(gls0)-logLik(gls1))^(2/80)
+   R2.list[i]<- R2
+   const.list[i]<-coef(gls1)[1]  	
+   richness.list[i]<- coef(gls1)[2]
+   B1.list[i]<- coef(gls1)[3]
+   BA.list[i]<- coef(gls1)[4]
+   elev.list[i]<- coef(gls1)[5]
+   slope.list[i]<- coef(gls1)[6]
+   cosa.list[i] <- coef(gls1)[7]
+   
+   #counter
+   cat(i, " of ", 1000, date(),"Theta=",coef(gls1)[2], "R2=", R2, "\n" )
+   
+    }, error=function(e){})
+  }
+  
+  comb.df<- cbind(rep(r, times= length(i.list)),i.list,loglik.list,AIC.list,BIC.list,R2.list,const.list,
+                  richness.list,B1.list,BA.list,elev.list,slope.list,cosa.list)
+  colnames(comb.df) <- c( "scale","i", "Loglik", "AIC","BIC","R2","const","theta","B1","BA","elev","slope","cosa") 
+  tot.df<- rbind(tot.df, comb.df)
+  print(r)
+}                                                                                                 
+
+tot.df1<-tot.df
+write.csv(tot.df1,"tot.df1.csv")
+# End of the code 
+
+
+###################################################################
+##### R script for Neighborhood analysis include STEP1 & STEP2 ###
+
+###################STEP1:##########################
+data<-read.csv("tree_level_data.csv",T)
+#####Neighboord sample circle radius range:6-57 meters
+initial_data1<-data[data$site=="site1",]
+comb.df<-list()
+neighbor.df <- as.data.frame(matrix(0,ncol=16,nrow = 0))
+for (r in 6:57) {
+  foc.data<-initial_data1[initial_data1$x>=r&initial_data1$x<=660-r&initial_data1$y>=r&initial_data1$y<=320-r,]
+  ####foc_data represent focal tree
+  foc_data<-foc.data[foc.data$detad>0,]
+  NB <- vector()
+  NS <- vector()   
+  for (i in 1:nrow(foc_data)){
+    foc_data2<-foc_data[i,]
+    sub.data<-initial_data1[sqrt((initial_data1$x-foc_data2$x)^2+(initial_data1$y-foc_data2$y)^2)<=r&sqrt((initial_data1$x-foc_data2$x)^2+(initial_data1$y-foc_data2$y)^2)>0,]
+    
+    NS[i]<-length(unique(sub.data$species))
+    NB[i]<-sum(sub.data$BA)/10000
+    
+  }
+  comb.df<- cbind(foc_data,NS,NB,rep(r, times= length(NB)))
+  colnames(comb.df) <- c( "site","plot", "subplot", "tag","species","dbh2010","detad","state","x","y","BA2010","Biomass2010","BP","NS","NB","radius") 
+  neighbor.df<- rbind(neighbor.df, comb.df)
+  print(r)
+}                                                                                                 
+
+neighbor.df1<-neighbor.df
+write.csv(neighbor.df1,"neighbor.df1.csv")
+
+initial_data2<-data[data$site=="site2",]
+comb.df<-list()
+neighbor.df <- as.data.frame(matrix(0,ncol=16,nrow = 0))
+for (r in 6:57) {
+  foc.data<-initial_data2[initial_data2$x>=r&initial_data2$x<=660-r&initial_data2$y>=r&initial_data2$y<=500-r,]
+  ####foc_data represent focal tree
+  foc_data<-foc.data[foc.data$detad>0,]
+  NB <- vector()
+  NS <- vector()   
+  for (i in 1:nrow(foc_data)){
+    foc_data2<-foc_data[i,]
+    sub.data<-initial_data2[sqrt((initial_data2$x-foc_data2$x)^2+(initial_data2$y-foc_data2$y)^2)<=r&sqrt((initial_data2$x-foc_data2$x)^2+(initial_data2$y-foc_data2$y)^2)>0,]
+    
+    NS[i]<-length(unique(sub.data$species))
+    NB[i]<-sum(sub.data$BA)/10000
+    
+  }
+  comb.df<- cbind(foc_data,NS,NB,rep(r, times= length(NB)))
+  colnames(comb.df) <- c( "site","plot", "subplot", "tag","species","dbh2010","detad","state","x","y","BA2010","Biomass2010","BP","NS","NB","radius") 
+  neighbor.df<- rbind(neighbor.df, comb.df)
+  print(r)
+}                                                                                                 
+
+neighbor.df2<-neighbor.df
+write.csv(neighbor.df2,"neighbor.df2.csv")
+
+neighbor.df3<-rbind(neighbor.df1,neighbor.df2)
+write.csv(neighbor.df3,"neighbor.df3.csv")  
+
+
+#############################STEP2:##########################
+##r range:6-57 meters
+## Neighborhood data
+neighbordata<-read.table("neighbor.df3.csv",header=T)
+comb.df<-list()
+lm_neighbor.df <- as.data.frame(matrix(0,ncol=5,nrow = 0))
+
+for (r in 6:57) {
+  sub.data= neighbordata[neighbordata$radius==r,]
+  sub_data<-as.data.frame(scale(sub.data[,c(6,7,14,15)]))
+  
+  interacoef <- vector()
+  NScoef   <- vector()   
+  NBcoef    <- vector()   
+  dbh1coef   <-vector()
+  
+  
+  for(i in 1:50) {
+    
+    training <- sub_data[sample(1:nrow(sub_data), nrow(sub_data), replace=TRUE),]
+    lm1 <- lm(detad~NS+NB+dbh2010, data=training)
+    summary(lm1)
+    interacoef[i]<-coef(lm1)[1]
+    NScoef[i]<-coef(lm1)[2]
+    NBcoef[i]<-coef(lm1)[3]
+    dbh2010coef[i]<-coef(lm1)[4]
+    
+  }
+  
+  comb.df<- cbind(rep(r, times= length(NBcoef)),interacoef,NScoef,NBcoef,dbh2010coef)
+  colnames(comb.df) <- c( "radius","interac", "NDC", "NB","dbh2010") 
+  lm_neighbor.df<- rbind(lm_neighbor.df, comb.df)
+  print(r)
+}                                                                                                    
+lm_neighbor.df1<-lm_neighbor.df
+write.csv(lm_neighbor.df1,"lm_neighbor.df1.csv")
+# End of the code 
+
+
